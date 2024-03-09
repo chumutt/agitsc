@@ -2355,7 +2355,18 @@ To use RASSOC with symbols as keys, the table must be a list of dotted pairs, li
 ** 14.1. Introduction
 ** 14.2. Macros as Shorthand
 ** 14.3. Macro Expansion
-** 14.4. Deﬁning a Macro
+** 14.4. Defining a Macro
+#+begin_src lisp :results verbatim
+(defmacro simple-incf (var)
+  (list 'setq var (list '+ var 1)))
+(setf a 4)
+(simple-incf a)
+(macroexpand (simple-incf a))
+#+end_src
+
+#+RESULTS:
+: 6, NIL
+
 ** 14.5. Macros as Syntactic Extensions
 ** 14.6. The Backquote Character
 ** 14.7. Splicing With Backquote
@@ -2364,6 +2375,26 @@ To use RASSOC with symbols as keys, the table must be a list of dotted pairs, li
 ** 14.10. Compiling Entire Programs
 ** 14.11. Case Study: Finite State Machines
 ** Lisp Toolkit: PPMX
+#+begin_src lisp
+(defmacro ppmx (form)
+  "Pretty prints the macro expansion of FORM."
+  `(let* ((exp1 (macroexpand-1 `,form))
+          (exp (macroexpand exp1))
+          (*print-circle* nil))
+     (cond ((equal exp exp1)
+            (format t "~&Macro expansion:")
+            (pprint exp))
+           (t (format t "~&First step fo expansion:")
+              (pprint exp1)
+              (format t "~%~%Final expansion:")
+              (pprint exp)))
+     (format t "~%~%")
+     (values)))
+#+end_src
+
+#+RESULTS:
+: PPMX
+
 ** Keyboard Exercise
 ** Advanced Topics
 ** 14.12. The &BODY Lambda-List Keyword
