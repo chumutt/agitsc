@@ -1,1 +1,2381 @@
-#+title: Readme
+#+title: Common Lisp: A Gentle Introduction to Symbolic Computation 2nd ed.
+#+author: David Touretszky
+:PROPERTIES:
+:ID:       b4c40c44-bfc5-407f-a9ce-03d934d5add2
+:END:
+* Old Unsorted Notes
+** Preface
++ Why Lisp can be good for beginners :: friendly, interactive environment, rich data structures, and powerful software tools that can be mastered quickly.
++ Why the book was updated :: because it was written prior to the ANSI Common Lisp standard and needed to be remolded to fit it.
+  + What was updated? :: ~24 corrections to the original manuscript to fit ANSI Common Lisp standard, and a few additions to the Further Readings section.
++ Three fundamental data types :: numbers, symbols, and lists.
++ Three types of readers in mind :: Students taking their first programming course, computer scientists/psychologists/linguists/others interested in AI, and computer hobbyists.
+** Notes for Instructors
+*** NOTE TO INSTRUCTORS
++ Author and cohorts have revised the book completely to fit the ANSI Common Lisp standard.
++ First two chapters use a graphical box-and-arrow notation for describing primitive functions and function composition. In the third chapter we switch to EVAL/evaltrace notation.
+**** OTHER FEATURES
++ Evaltrace notation shows step-by-step how Lisp expressions are evaluated, how functions are applied to arguments, and how variables are created and bound.
+  - The different roles of EVAL and APPLY, scoping of variables, and nesting of lexical contours can all be explained graphically using this notation. This makes the process of evaluation transparent to the student by describing it in a visual language which they can remember and use.
+***** THE LISP TOOLKIT
++ The Lisp Toolkit sections introduce the various programming aids that Common Lisp provides, such as DESCRIBE, INSPECT, TRACE, STEP, and the debugger.
++ Additionally, two tools unique to this book are included, their source code appearing in appendices A and B, respectively:
+  - SDRAW :: For drawing cons cell diagrams.
+    - SDRAW is a part of a read-eval-draw loop that has proven invaluable for teaching beginners to reason about cons cell structures (the differences among CONS, LIST, and APPEND in particular).
+  - DTRACE :: A tracing package that generates detailed output (moreso than most implementations of TRACE).
+    - DTRACE's detailed output is what makes it so useful for teaching beginners.
+**** EMPHASIS ON SIMPLICITY
++ EQUAL, an equality predicate (i.e., "are 24 and 24 EQUAL?"), is heavily relied on in the author's book as it is the "most useful equality predicate".
+  - EQ, EQL, EQUALP, and = are left for digestion in later chapters.
++ The author has intentionally written functions in a less concise manner than he normally would so as to avoid having to introduce inexperienced readers to obscure primitive functions.
++ The author also makes no attempt to cover the most advanced features of Common Lisp.
++ The author chooses Common Lisp rather than Scheme as "one can easily teach the subset of Common Lisp that is equivalent to Scheme". They cite other reasons that I don't feel knowledgable enough to comment on.
++ The author and their cohorts have carefully designed this book to meet the needs of beginning programmers and non-computer science students--the optional advanced topics sections at the end of each chapter provide enough "enrichment material" to hold the interest of junior and senior computer science majors.
+  - For advanced undergraduates, Guy L. Steele Jr.'s /Common Lisp: The Language/, 2nd ed. (pub. Digital Press) or Paul Graham's /ANSI Common Lisp/ would be useful companions to the introduction provided here.
+* 1. Functions and Data
+** 1.1. Introduction
+#+begin_example lisp
+(function data)
+ ; => 0 (0 bits, #x0, #o0, #b0)
+(+ 1 1)
+ ; => 2 (2 bits, #x2, #o2, #b10)
+#+end_example
+** 1.2. Functions On Numbers
++ Useful Lisp functions for numbers
+  - + :: Adds two numbers
+  - - :: Subtracts the second number from the first
+  - * :: Multiplies two numbers
+  - / :: Divides the first number by the second
+  - ABS :: Absolute value of a number
+  - SQRT :: Square root of a number
+#+begin_src lisp
+(+ 1 1)
+ ; => 2 (2 bits, #x2, #o2, #b10)
+(- 1 1)
+ ; => 0 (0 bits, #x0, #o0, #b0)
+(* 1 1)
+ ; => 1 (1 bit, #x1, #o1, #b1)
+(/ 1 1)
+ ; => 1 (1 bit, #x1, #o1, #b1)
+(abs -1)
+ ; => 1 (1 bit, #x1, #o1, #b1)
+(sqrt 4)
+ ; => 2.0
+#+end_src
+** 1.3. Three Kinds of Numbers
++ Integers :: 1, 2, 3, ...
++ Floating point :: 1.0, 2.0, 3.0, ...
+  - SQRT will typically return a floating point even if its input is an integer.
++ Ratios :: (EQUAL 0.5 1/2) => TRUE
++ Mixed Inputs :: Handing a function an integer and a floating point number always results in a floating point number being returned unless explicitly told to do otherwise.
+#+begin_src lisp
+(+ 1 6)
+ ; => 7 (3 bits, #x7, #o7, #b111)
+(/ 4 2.0)
+ ; => 2.0
+(/ 4.0 2)
+ ; => 2.0
+(/ 1 1/4)
+ ; => 4 (3 bits, #x4, #o4, #b100)
+#+end_src
+** 1.4. Order Of Inputs Is Important
+#+begin_src lisp
+(/ 8 2)
+ ; => 4 (3 bits, #x4, #o4, #b100)
+(/ 2 8)
+ ; => 1/4 (0.25, 25%)
+#+end_src
+*** Exercise 1.1 :answer:
+#+begin_src lisp
+(+ 6 7)
+#+end_src
+
+#+RESULTS:
+: 13
+
+#+begin_src lisp
+(* 3 4)
+#+end_src
+
+#+RESULTS:
+: 12
+
+#+begin_src lisp
+(/ 16 8)
+#+end_src
+
+#+RESULTS:
+: 2
+
+#+begin_src lisp
+(- 4 3)
+#+end_src
+
+#+RESULTS:
+: 1
+
+#+begin_src lisp
+(abs -3)
+#+end_src
+
+#+RESULTS:
+: 3
+
+#+begin_src lisp
+(* -8 6)
+#+end_src
+
+#+RESULTS:
+: -48
+
+#+begin_src lisp
+(/ 15 9)
+#+end_src
+
+#+RESULTS:
+: 5/3
+
+#+begin_src lisp
+(+ 8 0)
+#+end_src
+
+#+RESULTS:
+: 8
+
+#+begin_src lisp
+(- 5 6)
+#+end_src
+
+#+RESULTS:
+: -1
+
+#+begin_src lisp
+(- 1 1/3)
+#+end_src
+
+#+RESULTS:
+: 2/3
+
+#+begin_src lisp
+(abs
+ (+ -5 3))
+#+end_src
+
+#+RESULTS:
+: 2
+
+** 1.5. Symbols
+#+begin_src lisp
+(integerp 1)
+ ; => T
+(symbolp  1)
+ ; => NIL
+(integerp 'one)
+ ; => NIL
+(symbolp 'one)
+ ; => T
+#+end_src
++ Symbols :: Any sequence of letters, digits, and permissible special characters that is not a number.
+*** Exercise 1.2 :answer:
+
+| S | AARDVARK  |
+| I | 87        |
+| S | PLUMBING  |
+| S | 1-2-3-GO  |
+| I | 1492      |
+| N | 3.1415    |
+| N | 22/7      |
+| S | ZEROP     |
+| S | ZERO      |
+| I | 0         |
+| I | -12       |
+| S | SEVENTEEN |
+
+** 1.6. The Special Symbols T and NIL
++ Predicates return T or NIL (true (yes) or false (or empty))
+#+begin_src lisp
+(integerp 'T)
+ ; => NIL
+(symbolp 'NIL)
+ ; => T
+(integerp 'NIL)
+ ; => NIL
+(symbolp 'T)
+ ; => T
+#+end_src
+** 1.7. Some Simple Predicates
+#+begin_src lisp
+(integerp 'cat)
+ ; => NIL
+(symbolp 'dog)
+ ; => T
+(numberp 'cat)
+ ; => NIL
+(numberp 1)
+ ; => T
+(integerp 1)
+ ; => T
+(integerp 1.0)
+ ; => NIL
+(integerp 1/4)
+ ; => NIL
+(zerop 0)
+ ; => T
+(zerop 35)
+ ; => NIL
+(evenp 1)
+ ; => NIL
+(oddp 27)
+ ; => T
+#+end_src
+** 1.8. The EQUAL Predicate
++ EQUAL returns T if its two inputs are equal; otherwise it returns NIL.
+#+begin_src lisp
+(equal 'cat 'mouse)
+ ; => NIL
+(equal 'dog 'dog)
+ ; => T
+(equal 'three 3)
+ ; => NIL
+#+end_src
+*** Exercise 1.3 :answer:
+#+begin_src lisp
+(< 11 7)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(oddp 12)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(equal 'kirk 'spock)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(numberp 'twelve)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(< -3 -4)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(zerop 0)
+#+end_src
+
+#+RESULTS:
+: T
+
+#+begin_src lisp
+(equal -9 9)
+
+#+end_src
+
+#+RESULTS:
+: NIL
+
+** 1.9. Putting Functions Together
+*** 1.9.1. Deﬁning ADD1
+#+begin_src lisp
+(defun add1 (number)
+  (+ number 1))
+ ; => ADD1
+#+end_src
+*** 1.9.2. Deﬁning ADD2
+#+begin_src lisp
+(defun add1 (number)
+  (+ number 1))
+ ; => ADD1
+(defun add2 (number)
+  (add1 (add1 number)))
+ ; => ADD2
+#+end_src
+*** 1.9.3. Deﬁning TWOP
+**** Exercise 1.4 :answer:
+#+begrc lisp
+(defub2 (x)
+  (- )
+(sub2
+#+end
+
+#+RES:
+: 0
+:PROPES:
+:ID:   d59a3b66-98ae-4cd7-af79-3afcfa03f487
+:END:
+#+begrc lisp
+(defuop (number)
+  (eqnumber 2))
+ ; =>P
+#+end
+**** Exercise 1.5 :answer:
+#+begrc lisp :results append
+(defub2 (x)
+  (- )
+
+(defuOP (x)
+  (ifrop (sub2 x))
+
+     L))
+
+(twop
+(twop
+#+end
+
+#+RES:
+: SUB
+: TWO
+: T
+: NIL
+
+**** Exercise 1.6 :answer:
+#+begrc lisp
+(defulf1 (x)
+  (/ )
+
+(half
+
+(defulf2 (x)
+  (* 2))
+
+(half
+#+end
+
+#+RES:
+: 1
+
+**** Exercise 1.7 :answer:
+#+begrc lisp :results append
+(defulti-digit-p (x)
+  (ifx 9)
+
+     L))
+(multgit-p 10)
+(multgit-p 9)
+#+end
+
+#+RES:
+: MULIGIT-P
+: T
+: NIL
+
+**** Exercise 1.8 :answer:
+(- 0 x) == Δ 0 (no change)
+*** 1.9.4. Defining ONEMOREP
+#+begin_src lisp
+(defun add1 (number)
+  (+ number 1))
+ ; => ADD1
+(defun onemorep (n1 n2)
+  (equal (add1 n1) n2))
+ ; => ONEMOREP
+(onemorep 10 11)
+ ; => T
+(onemorep 11 11)
+ ; => NIL
+#+end_src
+**** Exercise 1.9 :answer:
+#+begin_src lisp :results append
+(defun add1 (x)
+  (+ x 1))
+
+(defun twomorep (x y)
+  (if (equal x (add1 (add1 y)))
+      'T
+      'NIL))
+
+(onemorep 7 6)
+
+(onemorep 7 3)
+
+#+end_src
+
+#+RESULTS:
+
+**** Exercise 1.10 :answer:
+#+begin_src lisp :results append
+(defun sub2 (x)
+  (- x 2))
+
+(defun twomorep (x y)
+  (if (equal y (sub2 x))
+      'T
+      'NIL))
+
+(twomorep 3 2)
+
+(twomorep 4 2)
+
+#+end_src
+
+#+RESULTS:
+: TWOMOREP
+: NIL
+: T
+
+**** Exercise 1.11 :answer:
+#+begin_src lisp
+(defun average (x y)
+  (/ (+ x y) 2))
+(average 10 0)
+#+end_src
+
+#+RESULTS:
+: 5
+
+**** Exercise 1.12 :answer:
+#+begin_src lisp
+(defun more-than-half-p (x y)
+  (if (> x (/ y 2))
+      'T
+      'NIL))
+
+(more-than-half-p 1 .5)
+#+end_src
+
+#+RESULTS:
+: T
+
+**** Exercise 1.13 :answer:
+#+begin_src lisp
+
+(defun following-function (x)
+  (numberp (symbolp x)))
+
+(following-function 18)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+** 1.10. The NOT Predicate
+#+begin_src lisp
+(not 'T)                                            ; give opposite of true
+ ; => NIL
+(not 'NIL)                                          ; give opposite of false
+ ; => T
+(not 'literally-anything-in-lisp-except-for-nil)    ; gives the opposite of false (NIL).
+ ; => NIL
+#+end_src
+*** Exercise 1.14 :answer:
+#+begin_src lisp
+(not 'nil)
+#+end_src
+
+#+RESULTS:
+: T
+
+#+begin_src lisp
+(not '12)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(not 'not)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+** 1.11. Negating A Predicate :ATTACH:
+#+begin_src lisp
+(defun not-equal (x y)
+  (not (equal x y)))
+ ; => NOT-EQUAL
+(not-equal 'pink 'green)
+ ; => T
+(not-equal 'pink 'pink)
+ ; => NIL
+#+end_src
+*** Exercise 1.15 :answer:
+#+bsrc lisp :results append
+(deot-onep (x)
+  (qual x 1)
+
+   IL))
+(nop 1)
+(nop .9)
+(nop 1.01)
+#+ec
+
+#+RS:
+: NEP
+: T
+: N
+: N
+
+*** Exercise 1.16 :answer:
+#+bsrc lisp :results append
+(deot-plusp (x)
+  (ot (> x 0))
+
+   IL))
+(nosp -1)
+(nosp 0)
+(nosp 0.1)
+(nosp 1)
+#+ec
+
+#+RS:
+: NUSP
+: T
+: T
+: N
+: N
+
+*** Exercise 1.17 :answer:
+#+bsrc lisp :results append
+(devenp-1 (x)
+  (oddp x)))
+(ev 1)
+(ev 0)
+(ev -1)
+#+ec
+
+#+RS:
+: E1
+: N
+: T
+: N
+
+*** Exercise 1.18 :answer:
+#+bsrc lisp :results append
+(dedd1 (x) (+ x 1))
+(zeadd1 (add1 -2)))
+#+ec
+
+#+RS:
+: T
+*** Exercise 1.19 :answer:
+#+bsrc lisp :results append
+(not 'NIL))
+(not 'T))
+(not 'RUTABAGA))
+#+ec
+
+#+RS:
+: N
+: T
+: T
+*** Exercise 1.20 :answer:
+#+begin_src lisp :results append
+(defun xor (x y)
+  (if
+   (and
+    (equal x y)
+    (or
+     (equal x 'nil)
+     (equal x 'T))) 'NIL
+     (if (not (equal x y)) 'T)))
+
+(xor 'T 'NIL)
+(xor 'NIL 'T)
+(xor 'T 'T)
+(xor 'NIL 'NIL)
+#+end_src
+
+#+RESULTS:
+: XOR
+: T
+: T
+: NIL
+: NIL
+
+** 1.12. Number of Inputs to a Function
+#+begin_src lisp
+(* 2 4 6)
+ ; => 48 (6 bits, #x30, #o60, #b110000)
+(* 2 4 6 8)
+ ; => 384 (9 bits, #x180)
+(* 1 2 3 4 5 6 7 8 9)
+ ; => 362880 (19 bits, #x58980)
+(- 50 3 4)
+ ; => 43 (6 bits, #x2B, #o53, #b101011)
+(- (- 50 3) 4)
+ ; => 43 (6 bits, #x2B, #o53, #b101011)
+(/ 120 3 5)
+ ; => 8 (4 bits, #x8, #o10, #b1000)
+(/ (/ 120 3) 5)
+ ; => 8 (4 bits, #x8, #o10, #b1000)
+(- 4)   ; negation of 4
+ ; => -4 (2 bits)
+(- -4)  ; negation of -4
+ ; => 4 (3 bits, #x4, #o4, #b100)
+(/ 4.0) ; reciprocal of 4.0
+ ; => 0.25 (25.0%)
+#+end_src
+** 1.13. Errors
+#+begin_src lisp :tangle no
+(+ 3 'furries)
+#+end_src
+
+#+RESULTS:
+: Value of 'FURRIES in (+ 3 'FURRIES) is FURRIES, not a NUMBER.
+
+#+begin_src lisp :tangle no
+(equal 2)
+#+end_src
+
+#+RESULTS:
+
+: invalid number of arguments: 1
+
+#+begin_src lisp
+(oddp 4 7)
+#+end_src
+
+#+RESULTS:
+
+: invalid number of arguments: 2
+
+#+begin_src lisp
+(/ 1 0)
+#+end_src
+
+#+RESULTS:
+
+: arithmetic error DIVISION-BY-ZERO signalled
+: Operation was (/ 1 0).
+
+*** Exercise 1.21 :answer:
++ ZEROP is a predicate function returning T or NIL. T or NIL are not Numbers, and cannot have the integer 1 added unto them. They are the wrong type, so this is a wrong type error.
++ EQUAL is a predicate function returning T or NIL if its (two) inputs are equal. If two Numbers are ran through the + function and are thus added together, then EQUAL doesn't get the two inputs it wants; this is a "too few inputs" error.
++ NOT only takes one input, not two. The diagram shows NOT taking in two inputs, so this will cause a "too many inputs" error before it even gets to the CDDR of the diagram (counting x & y inputs), id est the SYMBOLP predicate function.
+** Review Exercises
+*** TODO Exercise 1.22 :answer:
++ Yes.
++ Yes.
+*** TODO Exercise 1.23 :answer:
++ <
++ >
++ EQUAL
++ NOT
+*** TODO Exercise 1.24 :answer:
++ No.
++ Yes.
+*** TODO Exercise 1.25 :answer:
++ Anything other than NIL is treated as true in Lisp, and SYMBOL is a symbol (and not NIL) so it is TRUE in Lisp.
+*** TODO Exercise 1.26 :answer:
++ A: False
++ B: True
+*** TODO Exercise 1.27 :answer:
+#+begin_src lisp :tangle no :results append
+(evenp "hello")
+#+end_src
+
+#+begin_src lisp :tangle no :results append
+(evenp 0 0)
+#+end_src
+** Functions Covered In This Chapter
++ Arithmetic functions:
+  #+begin_quote
+    +, -, *, /, ABS, SQRT
+  #+end_quote
++ Predicates:
+  #+begin_quote
+    NUMBERP, SYMBOLP, ZEROP, ODDP, EVENP, <, >, EQUAL, NOT.
+  #+end_quote
+
+** Advanced Topics
+** 1.14. The History of Lisp
+* 2. Lists
+** 2.1. Lists Are The Most Versatile Data Type
++ Lists, inside of computer memory, are not parenthesized.
+  + Lists are organized as chains of cons cells.
+    - Cons cells are drawn as boxes.
+  + The cons cells are linked together by pointers.
+    - Pointers are drawn as arrows pointing to cons cells.
+  + Each cons cell has two pointers
+    - One of them *always* points to the end of the list.
++ Functions may also be represented as lists. This will come up in chapter 3.
+*** TODO Exercise 2.1 :answer:
+#+begin_src lisp
+(ql:quickload "draw-cons-tree")
+(draw-cons-tree:draw-tree '(to be or not to be))
+#+end_src
+
+#+RESULTS:
+[o|o]---[o|o]---[o|o]---[o|o]---[o|o]---[o|/]
+ |       |       |       |       |       |
+ TO      BE      OR     NOT      TO      BE
+** 2.2. What Do Lists Look Like? :ATTACH:
+#+begin_src lisp
+(list 'red 'green 'blue)
+#+end_src
+
+#+RESULTS:
+| RED | GREEN | BLUE |
+
+[[attachment:_20230213_195834screenshot.png]]
+
+** 2.3. Lists of One Element :ATTACH:
+#+begin_src lisp
+(list 'aardvark)
+#+end_src
+
+#+RESULTS:
+| AARDVARK |
+
+[[attachment:_20230213_195936screenshot.png]]
+
+** 2.4. Nested Lists :ATTACH:
+#+begin_src lisp
+(list
+ (list 'blue 'sky)
+ (list 'green 'grass)
+ (list 'brown 'earth))
+#+end_src
+
+#+RESULTS:
+| BLUE  | SKY   |
+| GREEN | GRASS |
+| BROWN | EARTH |
+
+[[attachment:_20230213_200057screenshot.png]]
+
+#+begin_src lisp
+(list (list 'brain 'surgeons) 'never (list 'say 'oops))
+#+end_src
+
+#+RESULTS:
+| (BRAIN SURGEONS) | NEVER | (SAY OOPS) |
+
+
+[[attachment:_20230213_200146screenshot.png]]
+
+#+name: Exercise 2.4.
+#+begin_src lisp
+(list (list 'bows 'arrows) (list 'flowers 'chocolates))
+#+end_src
+
+#+RESULTS: Exercise 2.4.
+| BOWS    | ARROWS     |
+| FLOWERS | CHOCOLATES |
+
+*** TODO Exercise 2.2 :answer:
+- no
+- yes
+- no
+- no
+- yes
+- yes
+*** TODO Exercise 2.3 :answer:
+[o|o]---[o|o]---[o|/]
+ |       |       |
+PLEASE   |      VALENTINE
+         |
+        [o|o]---[o|/]
+         |       |
+         BE      MY
+
+*** TODO Exercise 2.4 :answer:
+#+begin_src lisp :results raw
+'((BOWS ARROWS) (FLOWERS CHOCOLATES))
+#+end_src
+
+#+RESULTS:
+[o|o]---[o|/]
+ |       |
+ |      [o|o]---[o|/]
+ |       |       |
+ |      FLOWERS CHOCOLA
+ |
+[o|o]---[o|/]
+ |       |
+BOWS    ARROWS
+
+** 2.5. Length of Lists
+#+begin_src lisp
+(length
+ (list 'one 'two 'three 'four))
+#+end_src
+
+#+RESULTS:
+: 4
+
+*** TODO Exercise 2.5 :answer:
+#+begin_src lisp :results append
+(length '(open the pod bay doors hal))
+(length '((open) (the pod bay doors) hal))
+(length '((1 2 3)
+          (4 5 6)
+          (7 8 9)
+          (10 11 12)))
+(length '((one) for all (and (two (for me)))))
+(length '((Q SPADES)
+          (7 HEARTS)
+          (6 CLUBS)
+          (5 DIAMONDS)
+          (2 DIAMONDS)))
+(length '((P (T K S))
+          (NJ (T G S))
+          (MA (T B S))
+          (FL (T S S))
+          (NY (T E S))
+          (IN (T H S))))
+#+end_src
+
+#+RESULTS:
+: 6
+: 3
+: 4
+: 4
+: 5
+: 6
+
+** 2.6. NIL: The Empty List
+#+begin_src lisp
+()
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+'()
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(equal () '())
+#+end_src
+
+#+RESULTS:
+: T
+
+#+begin_src lisp
+(list () '())
+#+end_src
+
+#+RESULTS:
+| NIL | NIL |
+
+#+begin_src lisp
+(length ())
+#+end_src
+
+#+RESULTS:
+: 0
+
+#+begin_src lisp
+(length NIL)
+#+end_src
+
+#+RESULTS:
+: 0
+
+#+begin_src lisp
+(length DOG)
+#+end_src
+
+#+RESULTS:
+: The variable DOG is unbound.
+
+*** TODO Exercise 2.6 :answer:
+#+begin_src lisp :results vector append :hlines yes
+;; (remove #\space (princ-to-string "\( \)"))
+;; (princ-to-string #\=)
+;; (princ-to-string #\space)
+;; (remove #\space (princ-to-string '(#\( #\))))
+;; (princ-to-string #\=)
+;; (quote "(NIL)")
+;; (princ-to-string #\space)
+;; (remove #\space (princ-to-string '(#\( #\( #\) #\))))
+;; (princ-to-string #\=)
+;; (quote "((NIL))")
+;; (princ-to-string #\space)
+;; (quote "(() (()))")
+;; (princ-to-string #\=)
+;; (quote "(NIL (NIL))")
+;; (princ-to-string #\space)
+;; (quote "(() ())")
+;; (princ-to-string #\=)
+;; (quote "NIL NIL")
+#+end_src
+
+#+RESULTS:
+| ()          |
+| =           |
+| NIL         |
+|             |
+| (())        |
+| =           |
+| (NIL)       |
+|             |
+| ((()))      |
+| =           |
+| ((NIL))     |
+|             |
+| (() (()))   |
+| =           |
+| (NIL (NIL)) |
+|             |
+| (() ())     |
+| =           |
+| NIL NIL     |
+
+** 2.7. Equality of Lists
+#+begin_src lisp
+(equal '(a b c d) '(a b c d))
+#+end_src
+
+#+RESULTS:
+: T
+
+#+begin_src lisp
+(equal '(a b c d) '(a b c '(d)))
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(equal '(a b c '(d)) '(a b c '(d)))
+#+end_src
+
+#+RESULTS:
+: T
+
+** 2.8. FIRST, SECOND, THIRD, and REST
+#+begin_src lisp
+(first '(a b c d))
+#+end_src
+
+#+RESULTS:
+: A
+
+#+begin_src lisp
+(second '(a b c d))
+#+end_src
+
+#+RESULTS:
+: B
+
+#+begin_src lisp
+(third '(a b c d))
+#+end_src
+
+#+RESULTS:
+: C
+
+#+begin_src lisp
+(rest '(a b c d))
+#+end_src
+
+#+RESULTS:
+| B | C | D |
+
+#+begin_src lisp
+(defun my-second (list)
+  (first (rest list)))
+
+(my-second '(a b c d))
+#+end_src
+
+#+RESULTS:
+: B
+
+** 2.8. FIRST, SECOND, THIRD, and REST
+*** TODO Exercise 2.7 :answer:
+#+begin_src lisp
+(let
+    ((input '(honk if you like geese)))
+  (car (cdr input)))
+#+end_src
+
+#+RESULTS:
+: IF
+
+*** TODO Exercise 2.8 :answer:
+#+begin_src lisp
+(let
+    ((lst '(honk if you like geese)))
+      (defun my-third (lst)
+        (car (cdr (cdr lst))))
+      (my-third lst))
+#+end_src
+
+*** TODO Exercise 2.9 :answer:
+#+begin_src lisp
+(let
+    ((lst '(honk if you like geese)))
+  (defun my-third (lst)
+    (second (cdr lst))) ; I guess?
+  (my-third lst))
+#+end_src
+
+#+RESULTS:
+: YOU
+
+** 2.9. Functions Operate On Pointers
+** 2.9. Functions Operate On Pointers
++ Inside the computer everything is done with pointers.
+  - The input to a function isn't the object itself, but a pointer to the object.
+    - Likewise, the result a function returns is also really just a pointer.
+** 2.10. CAR and CDR
+#+begin_src lisp
+(car '(the big bopper))
+#+end_src
+
+#+RESULTS:
+: THE
+
+#+begin_src lisp
+(first '(the big bopper))
+#+end_src
+
+#+RESULTS:
+: THE
+
+#+begin_src lisp
+(cdr '(the big bopper))
+#+end_src
+
+#+RESULTS:
+| BIG | BOPPER |
+
+#+begin_src lisp
+(rest '(the big bopper))
+#+end_src
+
+#+RESULTS:
+| BIG | BOPPER |
+
+** 2.10. CAR and CDR
+*** 2.10.1. The CDR of a Single-Element List
+**** TODO Exercise 2.10 :answer:
+#+begin_quote
+[*][*]->nil ;'(
+ |
+ v
+[*][*]->nil ;(
+ |
+ v
+[*][*]->[*][*]->nil
+ |       |
+ v       v
+PHONE   HOME
+#+end_quote
+
+**** TODO Exercise 2.11 :answer:
+
+[o|o]---[o|o]---[o|/]
+ |       |       |
+ A      [o|/]   [o|/]
+         |       |
+        TOLL    [o|/]
+                 |
+                CALL
+*** 2.10.2. Combinations of CAR and CDR
+**** TODO Exercise 2.12 :answer:
+#+begin_src lisp
+(caddr '(first second third fourth fifth))
+#+end_src
+
+#+RESULTS:
+: THIRD
+
+*** 2.10.3. CAR and CDR of Nested Lists
+**** TODO Exercise 2.13 :answer:
+FUN:
+| Step   | Result                   |
+| start  | (((FUN)) (IN THE) (SUN)) |
+| C..AR  | ((FUN))                  |
+| C.AAR  | (FUN)                    |
+| CAAAR  | FUN                      |
+IN:
+| Step  | Result                   |
+| start | (((FUN)) (IN THE) (SUN)) |
+| C..DR | ((IN THE) (SUN))         |
+| C.ADR | (IN THE)                 |
+| CAADR | IN                       |
+THE:
+| Step   | Result                   |
+| start  | (((FUN)) (IN THE) (SUN)) |
+| C...DR | ((IN THE) (SUN))         |
+| C..ADR | (IN THE)                 |
+| C.DADR | (THE)                    |
+| CADADR | THE                      |
+SUN:
+| Step   | Result                   |
+| start  | (((FUN)) (IN THE) (SUN)) |
+| C...DR | ((IN THE) (SUN))         |
+| C..DDR | ((SUN))                  |
+| C.ADDR | (SUN)                    |
+| CAADDR | SUN                      |
+**** TODO Exercise 2.14 :answer:
+Reading the As and Ds from left to right would result in our going opposite the direction that lists are traversed. CAADR, read right to left (correctly) starting at D and going left up until C, results in our finding the CAR of the CAR of the CDR: RED. Read incorrectly, however, (starting at A and going left to right) results in our finding the CDR of the CAR of the CAR, which results in an error as it tries to find the CDR of the CAR's CAR, which is a symbol—not a list.
+
+#+begin_src lisp
+(car (car (cdr '((BLUE CUBE) (RED PYRAMID)))))
+#+end_src
+
+#+RESULTS:
+: RED
+
+#+begin_src lisp :results verbatim
+(cdr (car (car '((BLUE CUBE) (RED PYRAMID)))))
+#+end_src
+
+#+RESULTS:
+Value of (CAR (CAR '((BLUE CUBE) (RED PYRAMID)))) in
+(CDR (CAR (CAR '((BLUE CUBE) (RED PYRAMID)))))
+is
+  BLUE,
+not a
+  LIST.
+   [Condition of type SIMPLE-TYPE-ERROR]
+
+**** TODO Exercise 2.15 :answer:
+﻿﻿Using the list ( (A B) (C D) (E F) ), ﬁll in the missing parts of this
+table.
+#+begin_src lisp :results append raw
+(defparameter *mylist* '((A B) (C D) (E F)))
+(car *mylist*)
+(cddr *mylist*)
+(cadr *mylist*)
+(cdar *mylist*)
+(cadar *mylist*)
+(cddar *mylist*)
+(caar *mylist*)
+(cdaddr *mylist*)
+(cadaddr *mylist*) ;sbcl shows this as undefined function
+#+end_src
+
+#+RESULTS:
+(A B)
+((E F))
+(C D)
+(B)
+B
+NIL
+A
+(F)
+F
+**** TODO Exercise 2.16 :answer:
+#+begin_src lisp
+(caar '(fred nil))
+#+end_src
+#+RESULTS:
+Value of (CAR '(FRED NIL)) in
+(CAR (CAR '(FRED NIL)))
+is
+  FRED,
+not a
+  LIST.
+   [Condition of type SIMPLE-TYPE-ERROR]
+
+*** 2.10.4. CAR and CDR of NIL
++ The CAR and CDR of NIL are both NIL.
+#+begin_src lisp
+(car 'nil)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(cdr 'nil)
+#+end_src
+
+#+RESULTS:
+: NIL
+**** TODO Exercise 2.17 :answer:
+#+begin_src lisp :results append raw
+(car '(post no bills))
+(cdr '(post no bills))
+(car '((post no) bills))
+(cdr '(bills))
+;(car 'bills)
+(cdr '(post (no bills)))
+(cdr '((post no bills)))
+(car 'nil)
+;; car of nil is defined to be nil (same for cdr) for reasons we'll see soon
+#+end_src
+
+#+RESULTS:
+: POST
+: (POST NO)
+: (NO BILLS)
+: NIL
+: Value of 'BILLS in (CAR 'BILLS) is BILLS, not a LIST.
+:    [Condition of type SIMPLE-TYPE-ERROR]
+: ((NO BILLS))
+NIL
+NIL
+*** 2.10.1. The CDR of a Single-Element List
+#+begin_src lisp
+(car '(aardvark))
+#+end_src
+
+#+RESULTS:
+: AARDVARK
+
+#+begin_src lisp
+(cdr '(aardvark))
+#+end_src
+
+#+RESULTS:
+: NIL
+
+*** 2.10.2. Combinations of CAR and CDR :ATTACH:
+#+begin_src lisp
+(car (cdr '(fee fie foe fum)))
+#+end_src
+
+#+RESULTS:
+: FIE
+
+[[attachment:_20230213_201454screenshot.png]]
+
+Read boxes right to left, not left to right.
+
+#+begin_src lisp
+(first '(1 2 3 4 5 6 7 8 9 10))
+#+end_src
+
+#+RESULTS:
+: 1
+
+#+begin_src lisp
+(second '(1 2 3 4 5 6 7 8 9 10))
+#+end_src
+
+#+RESULTS:
+: 2
+
+#+begin_src lisp
+(third '(1 2 3 4 5 6 7 8 9 10))
+#+end_src
+
+#+RESULTS:
+: 3
+
+#+begin_src lisp
+(fourth '(1 2 3 4 5 6 7 8 9 10))
+#+end_src
+
+#+RESULTS:
+: 4
+
+#+begin_src lisp
+(fifth '(1 2 3 4 5 6 7 8 9 10))
+#+end_src
+
+#+RESULTS:
+: 5
+
+#+begin_src lisp
+(sixth '(1 2 3 4 5 6 7 8 9 10))
+#+end_src
+
+#+RESULTS:
+: 6
+
+#+begin_src lisp
+(seventh '(1 2 3 4 5 6 7 8 9 10))
+#+end_src
+
+#+RESULTS:
+: 7
+
+#+begin_src lisp
+(eighth '(1 2 3 4 5 6 7 8 9 10))
+#+end_src
+
+#+RESULTS:
+: 8
+
+#+begin_src lisp
+(ninth '(1 2 3 4 5 6 7 8 9 10))
+#+end_src
+
+#+RESULTS:
+: 9
+
+#+begin_src lisp
+(tenth '(1 2 3 4 5 6 7 8 9 10))
+#+end_src
+
+#+RESULTS:
+: 10
+
+The implementation of the Common Lisp specification that I use is Steel Bank Common Lisp (SBCL), which includes list functions up to but not including "eleventh":
+
+#+begin_src lisp
+(eleventh '(1 2 3 4 5 6 7 8 9 10 11))
+#+end_src
+
+#+RESULTS:
+: The function COMMON-LISP-USER::ELEVENTH is undefined.
+:   [Condition of type UNDEFINED-FUNCTION]
+
+
+
+*** 2.10.3. CAR and CDR of Nested Lists :ATTACH:
+#+begin_src lisp :results raw
+(car
+ (cdr
+  '(() (*CAR/CDR pronunciation guide*) ((cat 1.0 dog "frog cat dog" (+ 1 2 3 4))))))
+ ; => (CAR/CDR PRONUNCIATION GUIDE)
+#+end_src
+
+#+RESULTS:
+(*CAR/CDR PRONUNCIATION GUIDE*)
+
+[[attachment:_20230213_202044screenshot.png]]
+
+#+begin_src lisp
+(caar '((blue cube) (red pyramid)))
+#+end_src
+
+#+RESULTS:
+: BLUE
+
+*** 2.10.4. CAR and CDR of NIL
+
+The CAR and CDR of NIL are defined to be NIL. This will be useful later on.
+
+#+begin_src lisp
+(car nil)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(cdr nil)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+** 2.11. CONS
+#+begin_src lisp :results raw
+(cons 'a '(b c d))
+#+end_src
+
+#+RESULTS:
+(A B C D)
+
+#+begin_src lisp :results raw
+(defun greet (x)
+  (cons 'Hello x))
+ ; => GREET
+
+(greet '(Professor Higgins))
+ ; => (HELLO PROFESSOR HIGGINS)
+(greet '(THERE MISS DOOLITTLE))
+ ; => (HELLO THERE MISS DOOLITTLE)
+#+end_src
+
+*** 2.11.1. CONS and the Empty List
+#+begin_src lisp :results raw
+(cons 'a '())
+#+end_src
+
+#+RESULTS:
+(A)
+
+*** 2.11.2. Building Nested Lists With CONS
+#+begin_src lisp :results raw
+(cons '(fred) '(and ginger))
+#+end_src
+
+#+RESULTS:
+((FRED) AND GINGER)
+
+#+begin_src lisp :results raw
+(cons '(now is) '(the time))
+#+end_src
+
+#+RESULTS:
+((NOW IS) THE TIME)
+
+*** 2.11.3. CONS Can Build Lists From Scratch
+#+begin_src lisp :results raw
+(cons 'baz 'nil)
+#+end_src
+
+#+RESULTS:
+(BAZ)
+
+** 2.11. CONS
++ CONS function :: short for "construct"
+  - creates cons cells
+  - takes two inputs
+  - returns a pointer to a *new cons cell* whose CAR points to the first input and whose CDR points to the second.
+*** 2.11.1. CONS and the Empty List
+*** 2.11.2. Building Nested Lists With CONS
+*** 2.11.3. CONS Can Build Lists From Scratch
+**** TODO Exercise 2.18 :answer:
+#+begin_src lisp
+(defun ex218 (x y)
+  (cons x y))
+
+(ex218 'meat 'lord)
+#+end_src
+
+#+RESULTS:
+: (MEAT . LORD)
+
+** 2.12. Symmetry of CONS and CAR/CDR
+\( x = CONS of (CAR of x) and (CDR of x) \)
+** 2.13. LIST
+*** TODO Exercise 2.19 :answer:
+#+begin_src lisp :results append raw
+(list 'fred 'and 'wilma)
+(list 'fred '(and wilma))
+(cons 'fred '(and wilmia))
+(cons 'nil 'nil)
+(list 'nil 'nil)
+#+end_src
+
+#+RESULTS:
+(NIL NIL)
+(NIL)
+(FRED AND WILMIA)
+(FRED (AND WILMA))
+(FRED AND WILMA)
+
+** 2.14. Replacing the First Element of a List
+*** TODO Exercise 2.20 :answer:
+#+begin_src lisp
+(list 'nil)
+#+end_src
+
+#+RESULTS:
+| NIL |
+
+#+begin_src lisp
+(list 't 'nil)
+#+end_src
+
+#+RESULTS:
+| T | NIL |
+
+#+begin_src lisp
+(cons 't 'nil)
+#+end_src
+
+#+RESULTS:
+| T |
+
+#+begin_src lisp
+(cons '(t) nil)
+#+end_src
+
+#+RESULTS:
+| T |
+
+#+begin_src lisp
+(list '(in one ear and) '(out the other))
+#+end_src
+
+#+RESULTS:
+| IN  | ONE | EAR   | AND |
+| OUT | THE | OTHER |     |
+
+#+begin_src lisp
+(cons '(in one ear and) '(out the other))
+#+end_src
+
+#+RESULTS:
+| (IN ONE EAR AND) | OUT | THE | OTHER |
+
+*** TODO Exercise 2.21 :answer:
+Write a function that takes four inputs and returns a two-element nested list. The first element should be a list of the first two inputs, and the second element a list of the last two inputs.
+
+#+begin_src lisp
+(defun ex221 (a b c d)
+  (list (list a b) (list c d)))
+
+(ex221 'ren 'ard 'queen 'ston)
+#+end_src
+
+#+RESULTS:
+| REN   | ARD  |
+| QUEEN | STON |
+
+*** TODO Exercise 2.22 :answer:
+Suppose we wanted to make a function called DUO-CONS that added two elements to the front of a list. Remember that the regular CONS function adds only one element to a list. DUO-CONS would be a function of three inputs. For example, if the inputs were the symbol PATRICK, the symbol SEYMOUR, and the list (MARVIN), DUO-CONS would return the list (PATRICK SEYMOUR MARVIN). Show how to write the DUO-CONS function.
+
+#+begin_src lisp
+(defparameter *testlist* '(MARVIN))
+(defun duo-cons (var1 var2 lst)
+  (list (list var1 var2) lst))
+(duo-cons 'patrick 'seymour *testlist*)
+#+end_src
+
+#+RESULTS:
+| PATRICK | SEYMOUR |
+| MARVIN  |         |
+
+*** TODO Exercise 2.23 :answer:
+
+TWO-DEEPER is a function that surrounds its input with two levels of parentheses. TWO-DEEPER of MOO is ((MOO)). TWO-DEEPER of (BOW WOW) is (((BOW WOW))). Show how to write TWO-DEEPER using LIST. Write another version using CONS.
+
+#+begin_src lisp :results raw append
+(defparameter *test-input* 'MOO)
+(defparameter *test-input-2* '(MOO))
+(defun two-deeper-list (a)
+  (list (list a)))
+(defun two-deeper-cons (a)
+  (cons (cons a nil) nil))
+(two-deeper-list *test-input*)
+(two-deeper-cons *test-input*)
+(two-deeper-list *test-input-2*)
+(two-deeper-cons *test-input-2*)
+#+end_src
+
+#+RESULTS:
+(((MOO)))
+(((MOO)))
+((MOO))
+((MOO))
+
+*** TODO Exercise 2.24 :answer:
+#+begin_src lisp :results raw
+
+(defparameter *input-list* '(((GOOD)) ((NIGHT))))
+(caaadr *input-list*)
+
+#+end_src
+
+#+RESULTS:
+NIGHT
+
+** 2.14. Replacing the First Element of a List :ATTACH:
+#+begin_src lisp :results raw
+(defun say-what (x)
+  (cons 'what (rest x)))
+
+(say-what '(take a nap))
+#+end_src
+
+#+RESULTS:
+(WHAT A NAP)
+
+The SAY-WHAT function *doesn't replace any part of the list: it generates a new one* by making a new cons cell whose CDR half points to a portion of the old list. This is an essential idea of functional programming.
+
+[[attachment:_20230213_203513screenshot.png]]
+
+** 2.15. List Predicates
+
+#+begin_src lisp
+(atom '(a b c d e))
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(atom 'a)
+#+end_src
+
+#+RESULTS:
+: T
+
+#+begin_src lisp
+(listp '(a b c d e))
+#+end_src
+
+#+RESULTS:
+: T
+
+#+begin_src lisp
+(listp 'a)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(consp 'a)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+#+begin_src lisp
+(consp (list 'a 'b))
+#+end_src
+
+#+RESULTS:
+: T
+
+#+begin_src lisp
+(consp (cons 'a 'b))
+#+end_src
+
+#+RESULTS:
+: T
+
+#+begin_src lisp
+(consp '(a b))
+#+end_src
+
+#+RESULTS:
+: T
+
+#+begin_src lisp
+(consp 'nil)
+#+end_src
+
+#+RESULTS:
+: NIL
+
+** Chapter 2 Summary
++ The word “atom” comes from the Greek atornos, meaning indivisible. Numbers and symbols are atomic because they cannot be taken apart. Nonempty lists aren’t atomic: FIRST and REST take them apart.
+
++ We can take lists apart using CAR and CDR (“first” and “rest”) and put them together with CONS or LIST. The LENGTH function counts the number of elements in a list, which is the same as its number of top-level cons cells.
++ The important points about CAR and CDR are:
+
+    - CAR and CDR accept only lists as input.
+
+    - FIRST and REST are the same as CAR and CDR.
+
+    - SECOND and THIRD are the same as CADR and CADDR.
+
+    - Common Lisp provides built-in C...R functions for all combinations of CAR and CDR up to and including four As and Ds.
+
+    -he symbol NIL has several interesting properties:
+
+    - NIL is a symbol. It is the only way to say “no” or “false” in Lisp.
+
+    - NIL is a list. It is the empty list; its LENGTH is zero.
+
+    - NIL is the only Lisp object that is both a symbol and a list.
+
+    - NIL marks the end of a cons cell chain. When lists are printed in parenthesis notation, the NILs at the end of chains are omitted by convention.
+
+    - NIL and () are interchangeable notations for the same object.
+
+    - The CAR and CDR of NIL are defined to be NIL.
+
+** Advanced Topics
+*** 2.16. Unary Arithmetic with Lists
+**** TODO Exercise 2.25 :answer:
+Cons cells and the CONS function share the same name because the CONS function constructs (CONStructs) con cells.
+**** TODO Exercise 2.26 :answer:
+#+begin_src lisp
+(length (cdr '(A B C)))
+#+end_src
+
+#+RESULTS:
+: 2
+The other results in a type error because a length of 3 is an integer which is not a list and cdr only works on lists.
+**** DONE Exercise 2.27 :answer:
+
+**** DONE Exercise 2.28 :answer:
+**** DONE Exercise 2.29 :answer:
+**** DONE Exercise 2.30 :answer:
+**** DONE Exercise 2.31 :answer:
+**** DONE Exercise 2.32 :answer:
+**** DONE Exercise 2.33 :answer:
+*** 2.17. Nonlist Cons Structures
+**** DONE Exercise 2.34 :answer:
+**** DONE Exercise 2.35 :answer:
+
+*** 2.18. Circular Lists
+**** DONE Exercise 2.36 :answer:
+*** 2.19. Length of Nonlist Cons Structures
++ If given a circular list such as #1=(A B C . #1#) as input, LENGTH may not return a value at all. In most implementations it will go into an infinite loop.
+
++ What each cons cell actually is, internally, is a small piece of memory, split in two, big enough to hold two addresses (pointers) to other places in memory where the actual data
+
++ Note to instructors: If students are already using the computer, this would be a good time to introduce the SDRAW tool appearing in the appendix.
+** Advanced Topics
+** 2.16. Unary Arithmetic with Lists
+Only specified for nonnegative integers:
+
+#+begin_src lisp
+;; 3 - 1
+(length (rest '(X X X)))
+#+end_src
+
+#+RESULTS:
+: 2
+
+#+begin_src lisp
+;; 2 - 1
+(length (rest '(X X)))
+#+end_src
+
+#+RESULTS:
+: 1
+
+#+begin_src lisp
+;; 1 - 1
+(length (rest '(X)))
+#+end_src
+
+#+RESULTS:
+: 0
+
+** 2.17. Nonlist Cons Structures :ATTACH:
+*Proper lists* are cons cell chains that ends in NIL.
+
+Omit the NIL when writing in parenthetical notation, i.e., (A B C) is actually the following:
+
+[[attachment:_20230213_204451screenshot.png]]
+
+*Dotted lists*, rather than proper lists, are written as follows, because they do not end in NIL:
+
+#+begin_example lisp
+(A B C . D)
+#+end_example
+
+Which has the following structure:
+
+[[attachment:_20230213_204726screenshot.png]]
+
+** 2.18. Circular Lists :ATTACH:
+#+begin_src lisp
+#1=(A B C . #1#)
+#+end_src
+
+[[attachment:_20230213_204847screenshot.png]]
+
+** 2.19. Length of Nonlist Cons Structures
+#+begin_src lisp :eval no :tangle no
+(length '(A B C . D))
+#+end_src
+The length here is *3*, not *4*, as the LENGTH function counts the number of top-level cons cells in the chain. In other words, (A B C . D) has the same length as (A B C).
+
+SBCL doesn't allow for the LENGTH function to operate on lists that are not proper lists, so this I will leave unevaluated.
+
+* 3. EVAL Notation
+** 3.1. Introduction
+** 3.2. The EVAL Function
+** 3.3. EVAL Notation Can Do Anything Box Notation Can Do
+** 3.4. Evaluation Rules Deﬁne the Behavior of EVAL
+
+*** Evaluation Rule for Numbers, T, and NIL
+
+Numbers, and the symbols T and NIL, evaluate to themselves.
+
+*** Evaluation Rule for Lists
+
+The first element of the list specifies a function to be called. The remaining elements specify arguments to the function. The function is called on the evaluated arguments.
+
+*** DONE Exercise 3.1
+
+#+begin_src lisp
+(not (equal 3 (abs -3)))
+#+end_src
+
+#+RESULTS:
+: NIL
+
+*** DONE Exercise 3.2
+
+#+begin_src lisp
+(/ (+ 8 12) 2)
+#+end_src
+
+#+RESULTS:
+: 10
+
+*** DONE Exercise 3.3
+
+#+begin_src lisp
+(+ (* 3 3) (* 4 4))
+#+end_src
+
+#+RESULTS:
+: 25
+
+*** TODO Exercise 3.4
+
+** 3.5. Deﬁning Functions in EVAL Notation
+** 3.6. Variables
+** 3.7. Evaluating Symbols
+** 3.8. Using Symbols and Lists as Data
+** 3.9. The Problem of Misquoting
+** 3.10. Three Ways to Make Lists
+** 3.11. Four Ways to Misdeﬁne a Function
+** 3.12. More About Variables
+** Lisp on the Computer
+** 3.13. Running Lisp
+** 3.14. The Read-Eval-Print Loop
+** 3.15. Recovering From Errors
+** Lisp Toolkit: ED
+** Keyboard Exercise
+** Advanced Topics
+** 3.16. Functions of No Arguments
+** 3.17. The QUOTE Special Function
+** 3.18. Internal Structure of Symbols
+** 3.19. Lambda Notation
+** 3.20. Scope of Variables
+** 3.21. EVAL and APPLY
++ The first argument to APPLY should be quoted with #’ rather than an ordinary quote; #’ is the proper way to quote functions supplied as inputs to other functions. This will be explained in more detail in Ch. 7.
+* 4. Conditionals
+** 4.1. Introduction
+** 4.2. The IF Special Function
+#+begin_src lisp
+(if (oddp 1) 'odd 'even)
+ ; => ODD
+(if (oddp 0) 'odd 'even)
+ ; => EVEN
+(if t
+        'test-equaled-true
+        'test-equaled-false)
+ ; => TEST-EQUALED-TRUE
+(if nil
+        'test-equaled-true
+        'test-equaled-false)
+ ; => TEST-EQUALED-FALSE
+#+end_src
+** 4.3. The COND Macro
+#+begin_src lisp
+(defun number-cond (x y)
+  (cond ((equal x y) 'numbers-are-the-same)
+        ((< x y) 'first-number-is-smaller)
+        ((> x y) 'first-number-is-bigger)))
+
+(number-cond 1 1)
+ ; => NUMBERS-ARE-THE-SAME
+(number-cond 1 2)
+ ; => FIRST-NUMBER-IS-SMALLER
+(number-cond 2 1)
+ ; => FIRST-NUMBER-IS-BIGGER
+#+end_src
+** 4.4. Using T as a Test
+** 4.5. Two More Examples of COND
+** 4.6. COND and Parenthesis Errors
+** 4.7. The AND and OR Macros
+** 4.8. Evaluating AND and OR
+** 4.9. Building Complex Predicates
+** 4.10. Why AND and OR are Conditionals
+** 4.11. Conditionals are Interchangeable
+** Lisp Toolkit: STEP
+** Advanced Topics
+** 4.12. Boolean Functions
+** 4.13. Truth Tables
+** 4.14. DeMorgan’s Theorem
+* 5. Variables and Side Effects
+** 5.1. Introduction
+** 5.2. Local and Global Variables
+** 5.3. SETF Assigns a Value to a Variable
+** 5.4. Side Effects
+** 5.5. The LET Special Function
+** 5.6. The LET* Special Function
+** 5.7. Side Effects Can Cause Bugs
+** Lisp Toolkit: DOCUMENTATION and APROPOS
+** TODO Keyboard Exercise
+*** Attempt #1
+#+begin_src lisp
+(defun throw-die ()
+  "Throw a die between 1-6 randomly."
+  (let ((x (random 7)))
+    (if (= x 0)
+        (+ 1 x)
+        x)))
+
+(defun throw-dice ()
+  "Throw two random 6-sided die and return the result as a list."
+  (list
+   (throw-die)
+   (throw-die)))
+
+(defun snake-eyes-p (result)
+  (when (equal result '(1 1))
+    T))
+
+(defun boxcars-p (result)
+  (when (equal result '(6 6))
+    T))
+
+(defun total (result)
+  (+ (car result)
+     (cadr result)))
+
+(defun instant-win-p (result)
+  "American casino rules."
+  (when (= (total result))
+           7
+           11)
+    T)
+
+(defun instant-loss-p (result)
+  "American casino rules."
+  (when (= (total result))
+           2
+           3
+           12)
+    T)
+
+(defun say-throw (result)
+  (cond ((snake-eyes-p result)  'SNAKE-EYES)
+        ((boxcars-p    result)  'BOXCARS)
+        ((not (or (snake-eyes-p result)
+                  (boxcars-p    result)))
+         (total result))))
+
+(defun craps (result)
+  (format T "(THROW ~A AND ~A --"
+          (car result)
+          (cadr result))
+  (cond ((equal (snake-eyes-p result) T)
+         (format T " ~A -- YOU LOSE)" (say-throw result)))
+        ((equal (instant-loss-p result) T)
+         (format T " ~A -- YOU LOSE)" (say-throw result)))
+        ((equal (boxcars-p result) T)
+         (format T " ~A -- YOU WIN)" (say-throw result)))
+        ((equal (instant-win-p result) T)
+         (format T " ~A -- YOU WIN)" (say-throw result)))
+        (format T " -- YOUR POINT IS ~A)" (say-throw result))))
+#+end_src
+*** Attempt #2
+#+begin_src lisp
+(defun throw-die ()
+  "Returns a random number from 1 to 6, inclusive."
+  (+ 1 (random 6)))
+
+(defun throw-dice ()
+  "Returns two random die throws as a list."
+  (list (throw-die) (throw-die)))
+
+(defun throw-die ()
+  "Returns a random number from 1 to 6, inclusive."
+  (+ 1 (random 6)))
+
+(defun throw-dice ()
+  "Returns two random die throws as a list."
+  (list (throw-die) (throw-die)))
+
+(defun snake-eyes-p (dice-throw)
+  "Takes a throw as an input and returns T if the throw is equal to (1 1)."
+  (when (equal dice-throw '(1 1)) T))
+
+(defun boxcars-p (dice-throw)
+  "Takes a throw as an input and returns T if the throw is equal to (6 6)."
+  (when (equal dice-throw '(6 6)) T))
+
+(defun sum-of (dice-throw)
+  (+ (car dice-throw) (cadr dice-throw)))
+
+(defun instant-win-p (dice-throw)
+  (cond ((= (sum-of dice-throw) 7) T)
+        ((= (sum-of dice-throw) 11) T)))
+
+(defun instant-loss-p (dice-throw)
+  (cond ((= (sum-of dice-throw) 2) T)
+        ((= (sum-of dice-throw) 3) T)
+        ((= (sum-of dice-throw) 12) T)))
+
+(defun say-throw (dice-throw)
+  (format T "(THROW ~A AND ~A -- " (car dice-throw) (cadr dice-throw))
+  (cond ((snake-eyes-p dice-throw) 'snake-eyes (format T "SNAKEYES -- YOU LOSE)"))
+        ((boxcars-p dice-throw) 'boxcars (format T "BOXCARS -- YOU LOSE)"))
+        ((instant-win-p dice-throw) 'instant-win (format T "~A -- YOU WIN)" (sum-of dice-throw)))
+        ((instant-loss-p dice-throw) 'instant-loss) (format T "~A -- YOU LOSE)" (sum-of dice-throw))
+        ((format T "YOUR POINT IS ~A)" (sum-of dice-throw)))))
+
+(defun craps ()
+  (let ((dice-throw-0 (throw-dice)))
+    (say-throw dice-throw-0)))
+
+(defun try-for-point (point)
+  (let ((dice-throw (throw-dice)))
+    (cond ((= (sum-of dice-throw) point) (format T "~A -- YOU WIN)" (sum-of dice-throw)))
+          ((= (sum-of dice-throw) 7) (format T "~A -- YOU LOSE)" (sum-of dice-throw)))
+          ((format T "~A -- THROW AGAIN)" (sum-of dice-throw))))))
+#+end_src
+
+** Advanced Topics
+** 5.8. Symbols and Value Cells
+** 5.9. Distinguishing Local from Global Variables
+** 5.10. Binding, Scoping, and Assignment
+* 6. List Data Structures
+** 6.1. Introduction
+** 6.2. Parenthesis Notation vs. Cons Cell Notation
+** 6.3. The APPEND Function
+** 6.4. Comparing CONS, LIST, and APPEND
+** 6.5. More Functions on Lists
+** 6.5.1. REVERSE
+** 6.5.2. NTH and NTHCDR
+** 6.5.3. LAST
+** 6.5.4. REMOVE
+** 6.6. Lists as Sets
+** 6.6.1. MEMBER
+** 6.6.2. INTERSECTION
+** 6.6.3. UNION
+** 6.6.4. SET-DIFFERENCE
+** 6.6.5. SUBSETP
+** 6.7. Programming With Sets
+** 6.8. Lists As Tables
+#+begin_src lisp
+(setf words
+        '((one un)
+          (two deux)
+          (three trois)))
+ ; => ((ONE UN) (TWO DEUX) (THREE TROIS))
+#+end_src
+** 6.8.1. ASSOC
+#+begin_src lisp
+(setf words
+        '((one un)
+          (two deux)
+          (three trois)))
+ ; => ((ONE UN) (TWO DEUX) (THREE TROIS))
+(assoc 'three words)
+ ; => (THREE TROIS)
+(defun translate (x)
+  (second (assoc x words)))
+ ; => TRANSLATE
+(translate 'one)
+ ; => UN
+(translate 'two)
+ ; => DEUX
+(translate 'three)
+ ; => TROIS
+#+end_src
+** 6.8.2. RASSOC
+RASSOC looks at the cdr of each element of the table instead of the car.
+
+To use RASSOC with symbols as keys, the table must be a list of dotted pairs, like so:
+
+#+begin_src lisp
+(setf sounds
+        '((cow . moo)
+          (pig . oink)
+          (cat . meow)
+          (dog . woof)))
+ ; => ((COW . MOO) (PIG . OINK) (CAT . MEOW) (DOG . WOOF))
+(rassoc 'woof sounds)
+ ; => (DOG . WOOF)
+(assoc 'woof sounds)
+ ; => NIL
+(assoc 'dog sounds)
+ ; => (DOG . WOOF)
+(rassoc 'dog sounds)
+ ; => NIL
+#+end_src
+** 6.9. Programming With Tables
+#+begin_src lisp
+(defparameter *things*
+    '((object1 large green shiny cube)
+      (object2 small red dull metal cube)
+      (object3 red small dull plastic pyramid)))
+ ; => *THINGS*
+
+(defparameter *quality-table*
+      '((large . size)
+        (small . size)
+        (blue . color)
+        (green . color)
+        (red . color)
+        (shiny . luster)
+        (dull . luster)
+        (metal . material)
+        (plastic . material)
+        (cube . shape)
+        (pyramid . shape)
+        (four-sided . shape)
+        (sphere . shape)))
+ ; => ((LARGE . SIZE) (SMALL . SIZE) (BLUE . COLOR) (GREEN . COLOR) (RED . COLOR)
+ ; (SHINY . LUSTER) (DULL . LUSTER) (METAL . MATERIAL) (PLASTIC . MATERIAL)
+ ; (CUBE . SHAPE) (PYRAMID . SHAPE) (FOUR-SIDED . SHAPE) (SPHERE . SHAPE))
+
+(defun my-describe-object (x)
+  (rest (assoc x *things*)))
+ ; => MY-DESCRIBE-OBJECT
+
+(my-describe-object 'object1)
+ ; => (LARGE GREEN SHINY CUBE)
+
+(defun quality-of (x)
+  (cdr (assoc x *quality-table*)))
+ ; => QUALITY-OF
+
+(quality-of 'red)
+ ; => COLOR
+(quality-of 'sphere)
+ ; => SHAPE
+(defun differences (x y)
+  (set-exclusive-or (my-describe-object x)
+                    (my-describe-object y)))
+ ; => DIFFERENCES
+(defun quality-difference (x y)
+  (quality-of (first (differences x y))))
+ ; => QUALITY-DIFFERENCE
+(quality-difference 'object1 'object2)
+ ; => MATERIAL
+(quality-difference 'object2 'object2)
+ ; => NIL
+(quality-difference 'object2 'object3)
+ ; => SHAPE
+
+(defun list-all-differences (x y)
+    (remove-duplicates (sublis *quality-table* (differences x y))))
+ ; => LIST-ALL-DIFFERENCES
+(list-all-differences 'object1 'object2)
+ ; => (MATERIAL LUSTER COLOR SIZE)
+(list-all-differences 'object2 'object2)
+ ; => NIL
+#+end_src
+** Lisp Toolkit: SDRAW
+** TODO Keyboard Exercise
+
+#+begin_src lisp
+(defvar rooms
+  '((living-room        (north front-stairs)
+                        (south dining-room)
+                        (east kitchen))
+    (upstairs-bedroom   (west library)
+                        (south front-stairs))
+    (dining-room        (north living-room)
+                        (east pantry)
+                        (west downstairs-bedroom))
+    (kitchen            (west living-room)
+                        (south pantry))
+    (pantry             (north kitchen)
+                        (west dining-room))
+    (downstairs-bedroom (north back-stairs)
+                        (east dining-room))
+    (back-stairs        (south downstairs-bedroom)
+                        (north library))
+    (front-stairs       (north upstairs-bedroom)
+                        (south living-room))
+    (library            (east upstairs-bedroom)
+                        (south back-stairs))))
+
+(defun choices (room)
+  "Uses the ASSOC function to look up an entry of available directions from a ROOM (e.g., pantry, kitchen) in the ROOMS table-variable."
+  (cdr (assoc room rooms)))
+
+(choices 'library)
+ ; => ((EAST UPSTAIRS-BEDROOM) (SOUTH BACK-STAIRS))
+(choices 'front-stairs)
+ ; => ((NORTH UPSTAIRS-BEDROOM) (SOUTH LIVING-ROOM))
+(choices 'dining-room)
+ ; => ((NORTH LIVING-ROOM) (EAST PANTRY) (WEST DOWNSTAIRS-BEDROOM))
+(choices 'zerk-off-room)
+ ; => NIL
+
+(defun look (dir room)
+  (cadr (assoc dir (choices room))))
+
+(look 'north 'pantry)
+ ; => KITCHEN
+(look 'west 'pantry)
+ ; => DINING-ROOM
+(look 'weast 'pantry)
+ ; => NIL
+
+(defun set-robbie-location (place)
+  "Moves Robbie to PLACE by setting the variable LOC."
+  (setf loc place))
+
+(defun how-many-choices ()
+  (length (choices loc)))
+
+(defun upstairsp (place)
+  (or (equalp 'library place)
+      (equalp 'upstairs-bedroom place)))
+
+(defun onstairsp (place)
+  (or (equalp 'front-stairs place)
+      (equalp 'back-stairs place)))
+
+(defun where ()
+  (format T "ROBBIE IS ")
+  (cond ((upstairsp loc) (format T "UPSTAIRS IN THE ~A" loc))
+        ((not (upstairsp loc)) (format T "DOWNSTAIRS IN THE ~A" loc))
+        ((onstairsp loc) (format T "ON THE ~A" loc))))
+#+end_src
+
+** Advanced Topics
+** 6.10. Trees
+** 6.10.1. SUBST
+** 6.10.2. SUBLIS
+** 6.11. Eﬃciency of List Operations
+** 6.12. Shared Structure
+** 6.13. Equality of Objects
+** 6.14. Keyword Arguments
+* 7. Applicative Programming
+** 7.1. Introduction
+** 7.2. FUNCALL
+** 7.3. The MAPCAR Operator
+** 7.4. Manipulating Tables With MAPCAR
+** 7.5. Lambda Expressions
+** 7.6. The FIND-IF Operator
+** 7.7. Writing ASSOC With FIND-IF
+** 7.8. REMOVE-IF and REMOVE-IF-NOT
+** 7.9. The REDUCE Operator
+** 7.10. EVERY
+** Lisp Toolkit: TRACE and DTRACE
+** Keyboard Exercise
+** Advanced Topics
+** 7.11. Operating on Multiple Lists
+** 7.12. The FUNCTION Special Function
+** 7.13. Keyword Arguments to Applicative Operators
+** 7.14. Scoping and Lexical Closures
+** 7.15. Writing An Applicative Operator
+** 7.16. Functions That Make Functions
+* 8. Recursion
+** 8.1. Introduction
+** 8.2. Martin and the Dragon
+** 8.3. A Function to Search for Odd Numbers
+** 8.4. Martin Visits The Dragon Again
+** 8.5. A Lisp Version of the Factorial Function
+** 8.6. The Dragon’s Dream
+** 8.7. A Recursive Function for Counting Slices of Bread
+** 8.8. The Three Rules of Recursion
+** 8.9. Martin Discovers Inﬁnite Recursion
+** 8.10. Inﬁnite Recursion in Lisp
+** 8.11. Recursion Templates
+** 8.11.1. Double-Test Tail Recursion
+** 8.11.2. Single-Test Tail Recursion
+** 8.11.3. Augmenting Recursion
+** 8.12. Variations on the Basic Templates
+** 8.12.1. List-Consing Recursion
+** 8.12.2. Simultaneous Recursion on Several Variables
+** 8.12.3. Conditional Augmentation
+** 8.12.4. Multiple Recursion
+** 8.13. Trees and CAR/CDR Recursion
+** 8.14. Using Helping Functions
+** 8.15. Recursion in Art and Literature
+** Lisp Toolkit: The Debugger
+** Keyboard Exercise
+** Advanced Topics
+** 8.16. Advantages of Tail Recursion
+** 8.17. Writing New Applicative Operators
+** 8.18. The LABELS Special Function
+** 8.19. Recursive Data Structures
+* 9. Input/Output
+** 9.1. Introduction
+** 9.2. Character Strings
+** 9.3. The FORMAT Function
+** 9.4. The READ Function
+** 9.5. The YES-OR-NO-P Function
+** 9.6. Reading Files with WITH-OPEN-FILE
+** 9.7. Writing Files with WITH-OPEN-FILE
+** Keyboard Exercise
+** Lisp Toolkit: DRIBBLE
+** Advanced Topics
+** 9.8. Parameters to Format Directives
+** 9.9. Additional Format Directives
+** 9.10. The Lisp 1.5 Output Primitives
+** 9.11. Handling End-of-File Conditions
+** 9.12. Printing in Dot Notation
+** 9.13. Hybrid Notation
+* 10. Assignment
+** 10.1. Introduction
+** 10.2. Updating a Global Variable
+** 10.3. Stereotypical Updating Methods
+** 10.3.1. The INCF and DECF Macros
+** 10.3.2. The PUSH and POP Macros
+** 10.3.3. Updating Local Variables
+** 10.4. WHEN and UNLESS
+** 10.5. Generalized Variables
+** 10.6. Case Study: A Tic-Tac-Toe Player
+** Lisp Toolkit: BREAK and ERROR
+** Keyboard Exercise
+** Advanced Topics
+** 10.7. Do-lt-Yourself List Surgery
+** 10.8. Destructive Operations on Lists
+** 10.8.1. NCONC
+** 10.8.2. NSUBST
+** 10.8.3. Other Destructive Functions
+** 10.9. Programming With Destructive Operations
+** 10.10. SETQ and SET
+** 11. Iteration and Block Structure
+** 11.1. Introduction
+** 11.2. DOTIMES and DOLIST
+** 11.3. Exiting the Body of a Loop
+** 11.4. Comparing Recursive and Iterative Search
+** 11.5. Building Up Results With Assignment
+** 11.6. Comparing DOLIST with MAPCAR and Recursion
+** 11.7. The DO Macro
+** 11.8. Advantages of Implicit Assignment
+** 11.9. The DO* Macro
+** 11.10. Inﬁnite Loops with DO
+** 11.11. Implicit Blocks
+** Keyboard Exercise
+** Lisp Toolkit: TIME
+** Advanced Topics
+** 11.12. ROG1, PROG2, and PROGN
+** 11.13. Optional Arguments
+** 11.14. Rest Arguments
+** 11.15. Keyword Arguments
+** 11.16. Auxiliary Variables
+* 12. Structures and The Type System
+** 12.1. Introduction
+** 12.2. TYPEP and TYPE-OF
+** 12.3. Deﬁning Structures
+** 12.4. Type Predicates for Structures
+** 12.5. Accessing and Modifying Structures
+** 12.6. Keyword Arguments to Constructor Functions
+** 12.7. Changing Structure Deﬁnitions
+** Lisp Toolkit: DESCRIBE and INSPECT
+** Keyboard Exercise
+** Advanced Topics
+** 12.8. Print Functions for Structures
+** 12.9. Equality of Structures
+** 12.10. Inheritance from Other Structures
+* 13. Arrays, Hash Tables, And Property Lists
+** 13.1. Introduction
+** 13.2. Creating an Array
+** 13.3. Printing Arrays
+** 13.4. Accessing and Modifying Array Elements
+** 13.5. Creating Arrays With MAKE-ARRAY
+** 13.6. Strings as Vectors
+** 13.7. Hash Tables
+** 13.8. Property Lists
+** 13.9. Programming With Property Lists
+** Array Keyboard Exercise
+** Hash Table Keyboard Exercise
+** Lisp Toolkit: ROOM
+** Advanced Topics
+** 13.10. Property List Cells
+** 13.11. More On Sequences
+* 14. Macros and Compilation
+** 14.1. Introduction
+** 14.2. Macros as Shorthand
+** 14.3. Macro Expansion
+** 14.4. Deﬁning a Macro
+** 14.5. Macros as Syntactic Extensions
+** 14.6. The Backquote Character
+** 14.7. Splicing With Backquote
+** 14.8. The Compiler
+** 14.9. Compilation and Macro Expansion
+** 14.10. Compiling Entire Programs
+** 14.11. Case Study: Finite State Machines
+** Lisp Toolkit: PPMX
+** Keyboard Exercise
+** Advanced Topics
+** 14.12. The &BODY Lambda-List Keyword
+** 14.13. Destructuring Lambda Lists
+** 14.14. Macros and Lexical Scoping
+** 14.15. Historical Signiﬁcance of Macros
+** 14.16. Dynamic Scoping
+** 14.17. DEFVAR, DEFPARAMETER, DEFCONSTANT
+** 14.18. Rebinding Special Variables
+* Appendix A. The SDRAW Tool
+* Appendix B. The DTRACE Tool
+* Appendix C. Answers to Exercises
+* Glossary
+* Further Reading
+* Index
