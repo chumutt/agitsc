@@ -1,0 +1,4 @@
+:PROPERTIES:
+:ID:       b0d4dbc0-14a9-4d16-9fc1-8c7dd1c22947
+:END:
+#+title: Common Lisp: A Gentle Introduction to Symbolic Computation
