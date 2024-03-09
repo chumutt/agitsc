@@ -2,6 +2,7 @@
 :ID:       b4c40c44-bfc5-407f-a9ce-03d934d5add2
 :END:
 #+title: Common Lisp: A Gentle Introduction to Symbolic Computation
+#+author: David S. Touretzky
 * Old Unsorted Notes
 ** Preface
 + Why Lisp can be good for beginners :: friendly, interactive environment, rich data structures, and powerful software tools that can be mastered quickly.
